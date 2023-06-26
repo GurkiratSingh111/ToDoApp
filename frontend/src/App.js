@@ -1,109 +1,65 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from 'react'
+import ToDo from './ToDo'
+import { getAllToDo, addToDo, updateToDo, deleteToDo } from './utlis/HandleApi';
 
-function App() {
-  const [notes, setNotes] = useState([]);
+const App = () => {
+  const [toDo, setToDo] = useState([]);
   const [title, setTitle] = useState("");
-  const [desc, setDesc] = useState("");
-  const [selectedNote, setSelectedNote] = useState(null);
-
-  const new_array = notes.map((note, index) => {
-    return (
-      <div className="mt-4">
-        <button
-          className="btn btn-outline-warning"
-          onClick={() => {
-            handleClick(index);
-          }}
-        >
-          {note.title}
-        </button>
-        {selectedNote === index && (
-          <div className="mt-3">
-            <div className="note-body">{note.body}</div>
-          </div>
-        )}
-      </div>
-    );
-  });
-
-  // <------------------------LOCAL-STORAGE-------------------------------->
-  useEffect(() => {
-    const existing_notes = localStorage.getItem("notes");
-
-    if (existing_notes) {
-      setNotes(JSON.parse(existing_notes));
-    }
-  }, []);
+  const [description, setDesc] = useState("");
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [toDoID, setToDoID] = useState("");
 
   useEffect(() => {
-    localStorage.setItem("notes", JSON.stringify(notes));
-  }, [notes]);
+    getAllToDo(setToDo);
+  }, [])
 
-  // <------------------------------------------------------------------------>
-
-  function handleClick(index) {
-    setSelectedNote(selectedNote === index ? null : index);
-  }
-
-  function onSubmit(event) {
-    event.preventDefault();
-    setNotes([
-      ...notes,
-      {
-        title: title,
-        body: desc,
-        key: Math.floor(Math.random() * 1000000),
-      },
-    ]); //Push to be tested
-    setTitle("");
-    setDesc("");
+  const updateMode = (_id, title, description) => {
+    setIsUpdating(true);
+    setTitle(title);
+    setDesc(description);
+    setToDoID(_id);
   }
 
   return (
-    <div className="container">
-      <h2 className="headings">Note Hub</h2>
-      <form>
-        <div className="mb-3">
-          <label htmlFor="" className="form-label">
-            Title
-          </label>
+    <div className="App" >
+      <div className="container">
+        <h1>Todo App</h1>
+        <div className="top">
           <input
             type="text"
-            className="form-control"
-            placeholder="Enter the title here..."
-            id="title_input"
+            placeholder="Add Title"
             value={title}
-            onChange={(event) => {
-              setTitle(event.target.value);
-            }}
-          />
+            onChange={(e) => { setTitle(e.target.value) }} />
         </div>
-        <div className="mb-3">
-          <label htmlFor="" className="form-label">
-            Note:
-          </label>
-          <textarea
+        <div className="top">
+          <input
             type="text"
-            className="form-control"
-            placeholder="Write the note here..."
-            id="note_input"
-            value={desc}
-            onChange={(event) => {
-              setDesc(event.target.value);
-            }}
+            placeholder="Add Description"
+            value={description}
+            onChange={(e) => { setDesc(e.target.value) }}
           />
         </div>
-        <button className="btn btn-outline-warning btn-sm" onClick={onSubmit}>
-          Submit
-        </button>
-      </form>
-
-      <div>
-        <h3 className="headings">SAVED NOTES:</h3>
-        {new_array}
+        <div>
+          <button className="add" onClick={isUpdating ? () => updateToDo(toDoID, title, description, setToDo, setTitle, setDesc, setIsUpdating) : () => { addToDo(title, description, setTitle, setDesc, setToDo) }}>
+            {isUpdating ? "Update" : "Add"}
+          </button>
+        </div>
+      </div>
+      <div className="list">
+        {toDo.map((item) => {
+          return (
+            <ToDo
+              title={item.title}
+              key={item._id}
+              description={item.description}
+              updateMode={() => { updateMode(item._id, item.title, item.description) }}
+              deleteToDo={() => deleteToDo(item._id, setToDo)} />
+          )
+        })
+        }
       </div>
     </div>
-  );
+  )
 }
 
-export default App;
+export default App

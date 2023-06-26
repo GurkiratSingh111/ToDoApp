@@ -5,7 +5,7 @@ const routes = require('./routes/ToDoRoute');
 require('dotenv').config();
 
 const app = express();
-const PORT = process.env.port || 9000;
+const PORT = process.env.port || 3000;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
